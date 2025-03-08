@@ -20,3 +20,21 @@
   "role": "user"
 }
 ```
+
+
+## Sample User
+
+```json
+[
+    {
+        "username": "adarshere",
+        "email": "adarshere@sample.com",
+        "password": "examplePassword1!"
+    },
+    {
+        "username": "anshu",
+        "email": "anshu@sample.com",
+        "password": "examplePassword1!"
+    }
+]
+```

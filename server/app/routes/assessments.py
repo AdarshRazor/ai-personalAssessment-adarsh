@@ -12,6 +12,8 @@ from app.schemas.assessment import (
 from app.services.assessment_service import AssessmentService
 from app.services.openrouter_service import OpenRouterService
 from app.config import settings
+from app.routes.auth import get_current_user
+from app.models.user import User
 
 router = APIRouter()
 
@@ -22,7 +24,8 @@ def get_openrouter_service():
 @router.post("/", response_model=AssessmentResponse, status_code=status.HTTP_201_CREATED)
 async def create_assessment(
     assessment: AssessmentCreate, 
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     try:
         return AssessmentService.create_assessment(db, assessment)
@@ -30,14 +33,22 @@ async def create_assessment(
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/{assessment_id}", response_model=AssessmentResponse)
-async def read_assessment(assessment_id: int, db: Session = Depends(get_db)):
+async def read_assessment(
+    assessment_id: int, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     assessment = AssessmentService.get_assessment(db, assessment_id)
     if assessment is None:
         raise HTTPException(status_code=404, detail="Assessment not found")
     return assessment
 
 @router.get("/candidate/{candidate_id}", response_model=List[AssessmentResponse])
-async def read_candidate_assessments(candidate_id: int, db: Session = Depends(get_db)):
+async def read_candidate_assessments(
+    candidate_id: int, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     assessments = AssessmentService.get_assessments_by_candidate(db, candidate_id)
     return assessments
 
@@ -46,7 +57,8 @@ async def submit_response(
     assessment_id: int,
     response_data: ResponseSubmit,
     db: Session = Depends(get_db),
-    openrouter_service: OpenRouterService = Depends(get_openrouter_service)
+    openrouter_service: OpenRouterService = Depends(get_openrouter_service),
+    current_user: User = Depends(get_current_user)
 ):
     if not settings.OPENROUTER_API_KEY:
         raise HTTPException(
@@ -65,7 +77,11 @@ async def submit_response(
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/{assessment_id}/result", response_model=AssessmentResult)
-async def get_assessment_result(assessment_id: int, db: Session = Depends(get_db)):
+async def get_assessment_result(
+    assessment_id: int, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     assessment = AssessmentService.get_assessment(db, assessment_id)
     if assessment is None:
         raise HTTPException(status_code=404, detail="Assessment not found")
