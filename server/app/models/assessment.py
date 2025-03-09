@@ -9,6 +9,7 @@ class Assessment(BaseModel):
     status = Column(String, default="in_progress")  # in_progress, completed
     responses = Column(JSON, default={})  # Stores question_id: response pairs
     result = Column(JSON, nullable=True)  # Stores the assessment results
+    resume_file_path = Column(String, nullable=True)  # Stores the path to the uploaded resume PDF
     
     candidate = relationship("Candidate", back_populates="assessments")
 

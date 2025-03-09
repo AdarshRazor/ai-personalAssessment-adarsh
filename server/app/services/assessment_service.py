@@ -29,7 +29,21 @@ class AssessmentService:
     @staticmethod
     def get_assessment(db: Session, assessment_id: int) -> Optional[Assessment]:
         return db.query(Assessment).filter(Assessment.id == assessment_id).first()
-    
+    @staticmethod
+    def get_latest_assessment_by_user(db: Session, user_id: int) -> Optional[Assessment]:
+        # Get the candidate associated with the user
+        candidate = db.query(Candidate).filter(Candidate.user_id == user_id).first()
+        if not candidate:
+            return None
+        
+        # Get the latest assessment for the candidate
+        latest_assessment = (
+            db.query(Assessment)
+            .filter(Assessment.candidate_id == candidate.id)
+            .order_by(Assessment.id.desc())
+            .first()
+        )
+        return latest_assessment
     @staticmethod
     def get_assessments_by_candidate(db: Session, candidate_id: int) -> List[Assessment]:
         return db.query(Assessment).filter(Assessment.candidate_id == candidate_id).all()
