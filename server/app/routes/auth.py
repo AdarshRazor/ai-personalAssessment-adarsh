@@ -11,7 +11,7 @@ from app.schemas.auth import UserCreate, UserResponse, Token
 from app.config import settings
 
 router = APIRouter()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
 
 # JWT Configuration
 SECRET_KEY = settings.SECRET_KEY
@@ -92,3 +92,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         raise credentials_exception
     
     return user
+
+@router.get("/users/me", response_model=UserResponse)
+async def get_current_user_details(current_user: User = Depends(get_current_user)):
+    return current_user

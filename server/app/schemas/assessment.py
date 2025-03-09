@@ -4,6 +4,7 @@ from datetime import datetime
 
 class AssessmentBase(BaseModel):
     candidate_id: int
+    resume_file_path: Optional[str] = None
 
 class AssessmentCreate(AssessmentBase):
     pass
@@ -13,6 +14,7 @@ class AssessmentResponse(AssessmentBase):
     status: str
     responses: Dict[str, str] = {}
     result: Optional[Dict[str, Any]] = None
+    resume_file_path: Optional[str] = None
     created_at: datetime
     
     class Config:
