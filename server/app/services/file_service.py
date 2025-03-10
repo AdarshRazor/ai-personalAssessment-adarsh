@@ -1,9 +1,25 @@
+# File Service Module
+# This module handles file operations for resume uploads and management
+
 import os
 from pathlib import Path
 from fastapi import UploadFile
 from datetime import datetime
 
 class FileService:
+    """Service class for managing file operations
+    
+    This class provides methods for handling file uploads, particularly resumes,
+    including saving files with unique names and managing their lifecycle.
+    
+    The service ensures:
+    - Secure file storage with unique names
+    - Proper directory structure maintenance
+    - Clean file deletion when needed
+    
+    Class Attributes:
+        UPLOAD_DIR (Path): Base directory for storing uploaded resumes
+    """
     UPLOAD_DIR = Path("uploads/resumes")
 
     @classmethod

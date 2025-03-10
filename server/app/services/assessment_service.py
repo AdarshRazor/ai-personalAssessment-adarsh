@@ -10,11 +10,24 @@ import json
 class AssessmentService:
     @staticmethod
     def create_assessment(db: Session, assessment: AssessmentCreate) -> Assessment:
+        """Create a new assessment instance for a candidate
+        
+        Args:
+            db: Database session
+            assessment: Assessment creation data
+            
+        Returns:
+            Assessment: Created assessment instance
+            
+        Raises:
+            ValueError: If candidate not found
+        """
         # Verify candidate exists
         candidate = db.query(Candidate).filter(Candidate.id == assessment.candidate_id).first()
         if not candidate:
             raise ValueError(f"Candidate with ID {assessment.candidate_id} not found")
         
+        # Initialize new assessment with default values
         db_assessment = Assessment(
             candidate_id=assessment.candidate_id,
             status="in_progress",
@@ -28,9 +41,28 @@ class AssessmentService:
     
     @staticmethod
     def get_assessment(db: Session, assessment_id: int) -> Optional[Assessment]:
+        """Retrieve a specific assessment by ID
+        
+        Args:
+            db: Database session
+            assessment_id: ID of assessment to retrieve
+            
+        Returns:
+            Optional[Assessment]: Assessment if found, None otherwise
+        """
         return db.query(Assessment).filter(Assessment.id == assessment_id).first()
+
     @staticmethod
     def get_latest_assessment_by_user(db: Session, user_id: int) -> Optional[Assessment]:
+        """Get the most recent assessment for a user
+        
+        Args:
+            db: Database session
+            user_id: User ID to find assessment for
+            
+        Returns:
+            Optional[Assessment]: Most recent assessment if found, None otherwise
+        """
         # Get the candidate associated with the user
         candidate = db.query(Candidate).filter(Candidate.user_id == user_id).first()
         if not candidate:
@@ -44,8 +76,18 @@ class AssessmentService:
             .first()
         )
         return latest_assessment
+
     @staticmethod
     def get_assessments_by_candidate(db: Session, candidate_id: int) -> List[Assessment]:
+        """Get all assessments for a specific candidate
+        
+        Args:
+            db: Database session
+            candidate_id: Candidate ID to find assessments for
+            
+        Returns:
+            List[Assessment]: List of all assessments for the candidate
+        """
         return db.query(Assessment).filter(Assessment.candidate_id == candidate_id).all()
     
     @staticmethod
@@ -55,6 +97,23 @@ class AssessmentService:
         response_data: ResponseSubmit,
         openrouter_service: OpenRouterService
     ) -> Assessment:
+        """Submit and process a response for an assessment question
+        
+        Handles response submission, analysis, and personality profile generation
+        when sufficient responses are collected.
+        
+        Args:
+            db: Database session
+            assessment_id: Assessment ID to submit response for
+            response_data: Response submission data
+            openrouter_service: Service for AI analysis
+            
+        Returns:
+            Assessment: Updated assessment instance
+            
+        Raises:
+            ValueError: If assessment or question not found
+        """
         # Get the assessment
         assessment = db.query(Assessment).filter(Assessment.id == assessment_id).first()
         if not assessment:

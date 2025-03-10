@@ -1,9 +1,25 @@
+# Candidate Service Module
+# This module handles candidate profile management and data operations
+
 from sqlalchemy.orm import Session
 from app.models.candidate import Candidate
 from app.schemas.candidate import CandidateCreate
 from typing import List, Optional
 
 class CandidateService:
+    """Service class for managing candidate profiles
+    
+    This class provides methods for creating, retrieving, and updating
+    candidate profiles in the system. It handles basic CRUD operations
+    and ensures data consistency.
+    
+    The service maintains candidate information including:
+    - Personal details (name, email)
+    - Personality assessment results
+    - Profile management
+    
+    All methods are implemented as static methods for stateless operation.
+    """
     @staticmethod
     def create_candidate(db: Session, candidate: CandidateCreate) -> Candidate:
         # Check if candidate with same email already exists
