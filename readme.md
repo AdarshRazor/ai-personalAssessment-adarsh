@@ -117,6 +117,15 @@ python.exe -m pip install --upgrade pip
 - `tailwind.config.ts` - Tailwind CSS styling configuration
 - `components.json` - UI component configuration
 
+## Progress
+
+- Implemented a `ROBUST` bacnend.
+- Configured Frontend: NextJS, TypeScript, Tailwind
+    - Implemented Registration, Login, JWT Authentication and Cookie feature
+    - Implemented Candidate Profile Dashboardd
+    - Implemented Assessment page to start the user assessment.
+    - Analysis of CV using openRouter and provide score (working ...)
+
 ## Important Notes
 
 - Keep all `__init__.py` files intact as they are essential for Python package structure
