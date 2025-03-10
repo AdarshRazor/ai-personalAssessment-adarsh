@@ -1,3 +1,6 @@
+# Question Service Module
+# This module handles personality assessment question management and generation
+
 from sqlalchemy.orm import Session
 from app.models.question import Question
 from app.schemas.question import QuestionCreate
@@ -5,6 +8,20 @@ from app.services.openrouter_service import OpenRouterService
 from typing import List, Optional
 
 class QuestionService:
+    """Service class for managing personality assessment questions
+    
+    This class provides methods for creating, retrieving, and generating
+    personality assessment questions. It works with the OpenRouter service
+    to generate AI-powered behavioral questions for different personality traits.
+    
+    The service handles:
+    - Question creation and storage
+    - Retrieval by trait category
+    - Automated question generation for personality traits
+    - Question difficulty management
+    
+    All methods are implemented as static methods for stateless operation.
+    """
     @staticmethod
     async def create_question(db: Session, question: QuestionCreate) -> Question:
         db_question = Question(

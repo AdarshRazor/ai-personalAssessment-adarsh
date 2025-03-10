@@ -1,8 +1,26 @@
+# OpenRouter Service Module
+# This module provides an interface to the OpenRouter AI API for personality assessment
+
 import httpx
 from app.config import settings
 from typing import Dict, List, Any, Optional
 
 class OpenRouterService:
+    """Service class for interacting with OpenRouter AI API
+    
+    This class handles all AI-powered operations including:
+    - Generating behavioral interview questions
+    - Analyzing candidate responses
+    - Creating comprehensive personality profiles
+    
+    The service uses OpenRouter's API to access advanced language models
+    for natural language processing and analysis tasks.
+    
+    Attributes:
+        api_key (str): Authentication key for OpenRouter API
+        api_url (str): Base URL for OpenRouter API endpoints
+        headers (dict): HTTP headers for API requests
+    """
     def __init__(self):
         self.api_key = settings.OPENROUTER_API_KEY
         self.api_url = settings.OPENROUTER_API_URL

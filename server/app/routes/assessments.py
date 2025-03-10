@@ -1,3 +1,6 @@
+# Assessment Management Routes
+# This module handles assessment creation, response submission, and result retrieval
+
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import List
@@ -18,8 +21,9 @@ from app.models.user import User
 
 router = APIRouter()
 
-# Dependency to get OpenRouter service
+# Dependency to get OpenRouter service instance
 def get_openrouter_service():
+    """Create and return a new OpenRouter service instance for AI analysis"""
     return OpenRouterService()
 
 @router.post("/upload-resume")
@@ -28,6 +32,19 @@ async def upload_resume(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    """Handle resume file upload for assessment
+    
+    Args:
+        resume: PDF file to be uploaded
+        db: Database session
+        current_user: Authenticated user making the request
+        
+    Returns:
+        dict: Contains uploaded filename, file path, and associated assessment ID
+        
+    Raises:
+        HTTPException: If file is missing, not PDF, or upload fails
+    """
     if not resume:
         raise HTTPException(status_code=400, detail="No file uploaded")
     
@@ -39,13 +56,13 @@ async def upload_resume(
         upload_dir = os.path.join("uploads", "resumes")
         os.makedirs(upload_dir, exist_ok=True)
         
-        # Save the file
+        # Save the file with user-specific filename
         file_path = os.path.join(upload_dir, f"{current_user.id}_{resume.filename}")
         with open(file_path, "wb") as buffer:
             content = await resume.read()
             buffer.write(content)
         
-        # Get the current assessment and update the resume file path
+        # Update assessment record with resume path
         assessment = AssessmentService.get_latest_assessment_by_user(db, current_user.id)
         if assessment:
             assessment.resume_file_path = file_path
@@ -62,17 +79,42 @@ async def create_assessment(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    """Create a new assessment for a candidate
+    
+    Args:
+        assessment: Assessment creation data
+        db: Database session
+        current_user: Authenticated user making the request
+        
+    Returns:
+        AssessmentResponse: Created assessment instance
+        
+    Raises:
+        HTTPException: If validation fails or candidate not found
+    """
     try:
         return AssessmentService.create_assessment(db, assessment)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
 @router.get("/current", response_model=AssessmentResponse)
 async def get_current_assessment(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    """Get the most recent assessment for the current user
+    
+    Args:
+        db: Database session
+        current_user: Authenticated user making the request
+        
+    Returns:
+        AssessmentResponse: Most recent assessment for the user
+        
+    Raises:
+        HTTPException: If no assessment found or other errors occur
+    """
     try:
-        # Get the most recent assessment for the current user
         assessment = AssessmentService.get_latest_assessment_by_user(db, current_user.id)
         if assessment is None:
             raise HTTPException(
@@ -89,6 +131,19 @@ async def read_assessment(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    """Retrieve a specific assessment by ID
+    
+    Args:
+        assessment_id: ID of the assessment to retrieve
+        db: Database session
+        current_user: Authenticated user making the request
+        
+    Returns:
+        AssessmentResponse: Assessment details if found
+        
+    Raises:
+        HTTPException: If assessment not found
+    """
     assessment = AssessmentService.get_assessment(db, assessment_id)
     if assessment is None:
         raise HTTPException(status_code=404, detail="Assessment not found")
@@ -100,6 +155,16 @@ async def read_candidate_assessments(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    """Get all assessments for a specific candidate
+    
+    Args:
+        candidate_id: ID of the candidate
+        db: Database session
+        current_user: Authenticated user making the request
+        
+    Returns:
+        List[AssessmentResponse]: List of all assessments for the candidate
+    """
     assessments = AssessmentService.get_assessments_by_candidate(db, candidate_id)
     return assessments
 
@@ -111,6 +176,21 @@ async def submit_response(
     openrouter_service: OpenRouterService = Depends(get_openrouter_service),
     current_user: User = Depends(get_current_user)
 ):
+    """Submit a response for an assessment question
+    
+    Args:
+        assessment_id: ID of the assessment
+        response_data: Response submission data
+        db: Database session
+        openrouter_service: Service for AI analysis
+        current_user: Authenticated user making the request
+        
+    Returns:
+        AssessmentResponse: Updated assessment with submitted response
+        
+    Raises:
+        HTTPException: If OpenRouter API not configured or validation fails
+    """
     if not settings.OPENROUTER_API_KEY:
         raise HTTPException(
             status_code=500, 
@@ -133,6 +213,19 @@ async def get_assessment_result(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    """Retrieve the final results of a completed assessment
+    
+    Args:
+        assessment_id: ID of the assessment
+        db: Database session
+        current_user: Authenticated user making the request
+        
+    Returns:
+        AssessmentResult: Final assessment results and personality profile
+        
+    Raises:
+        HTTPException: If assessment not found or not complete
+    """
     assessment = AssessmentService.get_assessment(db, assessment_id)
     if assessment is None:
         raise HTTPException(status_code=404, detail="Assessment not found")

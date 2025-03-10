@@ -1,3 +1,6 @@
+# Candidate Management Routes
+# This module handles candidate profile creation and retrieval operations
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
@@ -16,6 +19,19 @@ async def create_candidate(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    """Create a new candidate profile
+    
+    Args:
+        candidate: Candidate creation data
+        db: Database session
+        current_user: Authenticated user making the request
+        
+    Returns:
+        CandidateResponse: Created candidate profile
+        
+    Raises:
+        HTTPException: If validation fails
+    """
     try:
         return CandidateService.create_candidate(db, candidate)
     except ValueError as e:
@@ -28,6 +44,17 @@ async def read_candidates(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    """Retrieve a paginated list of all candidates
+    
+    Args:
+        skip: Number of records to skip for pagination
+        limit: Maximum number of records to return
+        db: Database session
+        current_user: Authenticated user making the request
+        
+    Returns:
+        List[CandidateResponse]: List of candidate profiles
+    """
     candidates = CandidateService.get_candidates(db, skip=skip, limit=limit)
     return candidates
 
@@ -37,6 +64,19 @@ async def read_candidate(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    """Retrieve a specific candidate by ID
+    
+    Args:
+        candidate_id: ID of the candidate to retrieve
+        db: Database session
+        current_user: Authenticated user making the request
+        
+    Returns:
+        CandidateResponse: Candidate profile if found
+        
+    Raises:
+        HTTPException: If candidate not found
+    """
     candidate = CandidateService.get_candidate(db, candidate_id)
     if candidate is None:
         raise HTTPException(status_code=404, detail="Candidate not found")
@@ -48,6 +88,19 @@ async def read_candidate_by_email(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
+    """Retrieve a candidate by their email address
+    
+    Args:
+        email: Email address to search for
+        db: Database session
+        current_user: Authenticated user making the request
+        
+    Returns:
+        CandidateResponse: Candidate profile if found
+        
+    Raises:
+        HTTPException: If candidate not found
+    """
     candidate = CandidateService.get_candidate_by_email(db, email)
     if candidate is None:
         raise HTTPException(status_code=404, detail="Candidate not found")
